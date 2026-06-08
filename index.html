@@ -5,20 +5,39 @@
 <title>Genomic Trait Prototype</title>
 
 <style>
+:root{
+    --holstein-blue:#245986;
+    --light-grey:#eeeeee;
+    --line-grey:#d5d5d5;
+}
+
 body{
     font-family: Arial, sans-serif;
-    margin:30px;
+    margin:24px;
     color:#111;
+    background:#fff;
 }
 
 h2{
-    margin-bottom:20px;
+    margin:0 0 18px 0;
+}
+
+button{
+    padding:8px 12px;
+    cursor:pointer;
+    border:1px solid #888;
+    background:#f7f7f7;
+    border-radius:3px;
+}
+
+button:hover{
+    background:#e9e9e9;
 }
 
 .layout{
     display:grid;
-    grid-template-columns:420px 1fr;
-    gap:35px;
+    grid-template-columns:380px 1fr;
+    gap:26px;
     align-items:start;
 }
 
@@ -36,7 +55,7 @@ h2{
 label{
     font-weight:bold;
     display:block;
-    margin-bottom:4px;
+    margin-bottom:5px;
 }
 
 input{
@@ -61,16 +80,16 @@ input[type="color"]{
     padding:0;
 }
 
-button{
-    padding:8px 14px;
-    cursor:pointer;
-    margin-top:8px;
+.button-row{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin:14px 0;
 }
 
 table{
     width:100%;
     border-collapse:collapse;
-    margin-top:10px;
     background:white;
 }
 
@@ -80,23 +99,87 @@ th, td{
     font-size:13px;
 }
 
+th{
+    background:var(--holstein-blue);
+    color:white;
+}
+
 td input{
     border:0;
     padding:4px;
 }
 
+.chart-wrapper{
+    width:100%;
+    max-width:1050px;
+}
+
+.section-title{
+    display:grid;
+    grid-template-columns:200px 200px 1fr 80px;
+    background:var(--holstein-blue);
+    color:white;
+    font-weight:bold;
+    font-size:13px;
+    margin-top:10px;
+}
+
+.section-title div{
+    padding:5px 7px;
+    border-right:1px solid white;
+}
+
+.summary-row{
+    display:grid;
+    grid-template-columns:200px 200px 1fr 80px;
+    font-size:13px;
+    border-left:1px solid var(--line-grey);
+    border-right:1px solid var(--line-grey);
+    border-bottom:1px solid var(--line-grey);
+}
+
+.summary-row div{
+    padding:5px 7px;
+}
+
+.scale{
+    display:grid;
+    grid-template-columns:90px 86px 78px 1fr 78px 58px;
+    background:var(--holstein-blue);
+    color:white;
+    font-weight:bold;
+    font-size:12px;
+    margin-top:6px;
+}
+
+.scale div{
+    padding:4px 6px;
+    border-right:1px solid white;
+}
+
+.scale-bar{
+    display:flex;
+    justify-content:space-between;
+}
+
 .chart-row{
     display:grid;
-    grid-template-columns:140px 90px 520px 90px 60px;
+    grid-template-columns:90px 86px 78px 1fr 78px 58px;
     align-items:center;
-    margin:7px 0;
-    font-size:14px;
+    font-size:12px;
+    border-bottom:1px solid var(--line-grey);
+    min-height:20px;
+}
+
+.chart-row > div{
+    padding:3px 6px;
 }
 
 .bar-container{
     position:relative;
-    height:20px;
-    background:#eee;
+    height:18px;
+    background:var(--light-grey);
+    padding:0 !important;
 }
 
 .zero-line{
@@ -106,25 +189,31 @@ td input{
     bottom:0;
     width:2px;
     background:#555;
+    z-index:2;
 }
 
 .bar{
     position:absolute;
-    top:2px;
-    height:16px;
+    top:4px;
+    height:10px;
+    z-index:1;
 }
 
-.scale{
-    display:grid;
-    grid-template-columns:140px 90px 520px 90px 60px;
+.chart-row .value{
+    text-align:right;
+}
+
+#editDataPanel{
+    display:none;
+    margin-top:14px;
+    max-height:420px;
+    overflow:auto;
+}
+
+.small-note{
     font-size:12px;
-    margin-bottom:6px;
     color:#555;
-}
-
-.scale-bar{
-    display:flex;
-    justify-content:space-between;
+    margin-top:8px;
 }
 </style>
 </head>
@@ -135,93 +224,190 @@ td input{
 
 <div class="layout">
 
-<div class="panel">
-    <h3>Controls</h3>
+    <div class="panel">
+        <h3>Controls</h3>
 
-<div class="control-row">
-    <label>Positive colour</label>
-    <input type="color" id="positiveColour" value="#1f77c9">
-</div>
-
-<div class="control-row">
-    <label>Negative colour</label>
-    <input type="color" id="negativeColour" value="#8aaac5">
-</div>
-
-<div class="control-row">
-    <label class="checkbox-label">
-        <input type="checkbox" id="useGradient" checked>
-        Use gradient
-    </label>
-</div>
-
-<div class="control-row">
-    <label>Gradient change strength</label>
-    <input type="range" id="gradientStrength" min="0" max="1" step="0.05" value="0.8">
-</div>
-
-<div class="control-row">
-    <label class="checkbox-label">
-        <input type="checkbox" id="reverseGradient">
-        Strongest colour at zero
-    </label>
-</div>
-
-<button onclick="addTrait()">Add trait</button>
-
-    <button onclick="toggleEditData()" id="editDataBtn">✏️ Edit Data</button>
-
-<div id="editDataPanel" style="display:none;">
-    <h3>Trait Data</h3>
-
-    <table id="traitTable">
-    <thead>
-        <tr>
-            <th>Trait</th>
-            <th>Value</th>
-            <th>Left label</th>
-            <th>Right label</th>
-        </tr>
-    </thead>
-    <tbody></tbody>
-</table>
-
-<button onclick="saveData()">Save Data</button>
-</div>
-
-</div>
-
-<div>
-    <div class="scale">
-        <div></div>
-        <div></div>
-        <div class="scale-bar">
-            <span>-3</span>
-            <span>-2</span>
-            <span>-1</span>
-            <span>0</span>
-            <span>+1</span>
-            <span>+2</span>
-            <span>+3</span>
+        <div class="control-row">
+            <label>Positive colour</label>
+            <input type="color" id="positiveColour" value="#f0ce3d">
         </div>
-        <div></div>
-        <div></div>
+
+        <div class="control-row">
+            <label>Negative colour</label>
+            <input type="color" id="negativeColour" value="#4f6f8b">
+        </div>
+
+        <div class="control-row">
+            <label class="checkbox-label">
+                <input type="checkbox" id="useGradient" checked>
+                Use gradient
+            </label>
+        </div>
+
+        <div class="control-row">
+            <label>Gradient change strength</label>
+            <input type="range" id="gradientStrength" min="0" max="1" step="0.05" value="0.75">
+        </div>
+
+        <div class="control-row">
+            <label class="checkbox-label">
+                <input type="checkbox" id="reverseGradient">
+                Strongest colour at zero
+            </label>
+        </div>
+
+        <div class="button-row">
+            <button onclick="loadExample()">Load Rimrock Example</button>
+            <button onclick="undoChange()">Undo</button>
+            <button onclick="resetDesign()">Reset Design</button>
+        </div>
+
+        <div class="control-row">
+            <label>Upload Type CSV</label>
+            <input type="file" id="csvUpload" accept=".csv">
+            <div class="small-note">
+                CSV should include columns: Trait, Value, LeftLabel, RightLabel
+            </div>
+        </div>
+
+        <div class="button-row">
+            <button onclick="toggleEditData()">✏️ Edit Type Data</button>
+            <button onclick="addTrait()">Add trait</button>
+        </div>
+
+        <div id="editDataPanel">
+            <h3>Type Trait Data</h3>
+
+            <table id="traitTable">
+                <thead>
+                    <tr>
+                        <th>Trait</th>
+                        <th>Value</th>
+                        <th>Left label</th>
+                        <th>Right label</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+
+            <div class="button-row">
+                <button onclick="saveData()">Save Type Data</button>
+            </div>
+        </div>
     </div>
 
-    <div id="chart"></div>
-</div>
+    <div class="chart-wrapper">
+
+        <div class="section-title">
+            <div>Holstein Type</div>
+            <div>Interbull Type Proof</div>
+            <div>PTAT2026 (4/26)</div>
+            <div></div>
+        </div>
+
+        <div class="summary-row">
+            <div>TM&nbsp;&nbsp;&nbsp; <strong>2.88</strong></div>
+            <div>89% Rlb</div>
+            <div>Daughters (UK)&nbsp;&nbsp;119&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Herds (UK)&nbsp;&nbsp;20</div>
+            <div></div>
+        </div>
+
+        <div class="scale">
+            <div>Trait</div>
+            <div></div>
+            <div>-3</div>
+            <div class="scale-bar">
+                <span>-2</span>
+                <span>-1</span>
+                <span>0</span>
+                <span>+1</span>
+                <span>+2</span>
+                <span>+3</span>
+            </div>
+            <div></div>
+            <div>Value</div>
+        </div>
+
+        <div id="chart"></div>
+
+    </div>
 
 </div>
 
 <script>
-let traits = [
+const defaultTraits = [
     {name:"Type Merit", value:2.88, left:"Poor", right:"Excellent"},
     {name:"Mammary", value:2.19, left:"Poor", right:"Excellent"},
     {name:"Legs & Feet", value:2.37, left:"Poor", right:"Excellent"},
     {name:"Stature", value:-0.21, left:"Short", right:"Tall"},
-    {name:"Chest width", value:1.6, left:"Narrow", right:"Wide"},
-    {name:"Body depth", value:0.87, left:"Shallow", right:"Deep"}
+    {name:"Chest width", value:1.60, left:"Narrow", right:"Wide"},
+    {name:"Body depth", value:0.87, left:"Shallow", right:"Deep"},
+    {name:"Rib Structure", value:0.90, left:"Tight Ribbed", right:"Open Rib"},
+    {name:"Rump angle", value:-1.25, left:"High pins", right:"Low pins"},
+    {name:"Rump width", value:2.20, left:"Narrow", right:"Wide"},
+    {name:"Rear leg side", value:0.98, left:"Straight", right:"Sickled"},
+    {name:"Foot angle", value:0.63, left:"Low", right:"Steep"},
+    {name:"Fore udd att", value:1.33, left:"Loose", right:"Tight"},
+    {name:"Rear udder ht", value:1.60, left:"Very low", right:"Very high"},
+    {name:"Udder supp", value:0.60, left:"Broken", right:"Strong"},
+    {name:"Udder depth", value:0.75, left:"Below hock", right:"20cm above"},
+    {name:"Front teat pl", value:0.58, left:"Outside", right:"Close"},
+    {name:"Teat length", value:1.47, left:"Short", right:"Long"},
+    {name:"Rear teat pl", value:-0.38, left:"Apart", right:"Close"},
+    {name:"Teat pos side", value:0.08, left:"Close", right:"Apart"},
+    {name:"Temperament", value:0.08, left:"Poor", right:"Good"},
+    {name:"Ease of milk", value:1.09, left:"Slow", right:"Fast"},
+    {name:"Locomotion", value:2.80, left:"Poor", right:"Excellent"},
+    {name:"CondScore", value:0.37, left:"Low", right:"High"}
 ];
+
+let traits = JSON.parse(JSON.stringify(defaultTraits));
+let undoStack = [];
+
+function saveUndo(){
+    undoStack.push(JSON.stringify(traits));
+
+    if(undoStack.length > 20){
+        undoStack.shift();
+    }
+}
+
+function undoChange(){
+    if(undoStack.length === 0){
+        alert("Nothing to undo");
+        return;
+    }
+
+    traits = JSON.parse(undoStack.pop());
+    renderTable();
+    renderChart();
+}
+
+function loadExample(){
+    saveUndo();
+    traits = JSON.parse(JSON.stringify(defaultTraits));
+    renderTable();
+    renderChart();
+}
+
+function resetDesign(){
+    document.getElementById("positiveColour").value = "#f0ce3d";
+    document.getElementById("negativeColour").value = "#4f6f8b";
+    document.getElementById("useGradient").checked = true;
+    document.getElementById("gradientStrength").value = 0.75;
+    document.getElementById("reverseGradient").checked = false;
+    renderChart();
+}
+
+function toggleEditData(){
+    const panel = document.getElementById("editDataPanel");
+    panel.style.display = panel.style.display === "none" ? "block" : "none";
+}
+
+function saveData(){
+    renderChart();
+    document.getElementById("editDataPanel").style.display = "none";
+}
 
 function hexToRgb(hex){
     const bigint = parseInt(hex.slice(1), 16);
@@ -230,18 +416,6 @@ function hexToRgb(hex){
         g:(bigint >> 8) & 255,
         b:bigint & 255
     };
-}
-
-function getColour(value){
-    const positiveColour = hexToRgb(document.getElementById("positiveColour").value);
-    const negativeColour = hexToRgb(document.getElementById("negativeColour").value);
-    const strength = parseFloat(document.getElementById("gradientStrength").value);
-
-    const colour = value >= 0 ? positiveColour : negativeColour;
-    const intensity = Math.abs(value) / 3;
-    const opacity = 0.15 + (intensity * strength);
-
-    return `rgba(${colour.r}, ${colour.g}, ${colour.b}, ${opacity})`;
 }
 
 function getGradient(value){
@@ -254,8 +428,8 @@ function getGradient(value){
 
     const colour = value >= 0 ? positiveColour : negativeColour;
 
-    const weakOpacity = 0.15;
-    const strongOpacity = 0.15 + strength;
+    const weakOpacity = 0.18;
+    const strongOpacity = Math.min(1, 0.18 + strength);
 
     const weak = `rgba(${colour.r}, ${colour.g}, ${colour.b}, ${weakOpacity})`;
     const strong = `rgba(${colour.r}, ${colour.g}, ${colour.b}, ${strongOpacity})`;
@@ -275,16 +449,6 @@ function getGradient(value){
     }
 }
 
-function toggleEditData(){
-    const panel = document.getElementById("editDataPanel");
-    panel.style.display = panel.style.display === "none" ? "block" : "none";
-}
-
-function saveData(){
-    renderChart();
-    document.getElementById("editDataPanel").style.display = "none";
-}
-    
 function renderTable(){
     const tbody = document.querySelector("#traitTable tbody");
     tbody.innerHTML = "";
@@ -309,7 +473,7 @@ function renderChart(){
 
     traits.forEach(trait => {
         const value = Math.max(-3, Math.min(3, parseFloat(trait.value) || 0));
-        const width = Math.abs(value) / 3 * 260;
+        const width = Math.abs(value) / 3 * 50;
         const colour = getGradient(value);
 
         const row = document.createElement("div");
@@ -318,32 +482,40 @@ function renderChart(){
         row.innerHTML = `
             <div>${trait.name}</div>
             <div>${trait.left}</div>
+            <div></div>
 
             <div class="bar-container">
                 <div class="zero-line"></div>
                 <div class="bar"
                     style="
                     background:${colour};
-                    width:${width}px;
-                    ${value >= 0 ? `left:260px;` : `left:${260-width}px;`}
+                    width:${width}%;
+                    ${value >= 0 ? `left:50%;` : `left:${50-width}%;`}
                     ">
                 </div>
             </div>
 
             <div>${trait.right}</div>
-            <div>${value.toFixed(2)}</div>
+            <div class="value">${formatValue(value)}</div>
         `;
 
         chart.appendChild(row);
     });
 }
 
+function formatValue(value){
+    return Number.isInteger(value) ? value.toString() : value.toFixed(2).replace(/0$/, "").replace(/\.00$/, "");
+}
+
 function updateTrait(index, field, value){
+    saveUndo();
     traits[index][field] = field === "value" ? parseFloat(value) : value;
     renderChart();
 }
 
 function addTrait(){
+    saveUndo();
+
     traits.push({
         name:"New trait",
         value:0,
@@ -353,6 +525,82 @@ function addTrait(){
 
     renderTable();
     renderChart();
+    document.getElementById("editDataPanel").style.display = "block";
+}
+
+function parseCSVLine(line){
+    const result = [];
+    let current = "";
+    let insideQuotes = false;
+
+    for(let i = 0; i < line.length; i++){
+        const char = line[i];
+
+        if(char === '"' && line[i + 1] === '"'){
+            current += '"';
+            i++;
+        } else if(char === '"'){
+            insideQuotes = !insideQuotes;
+        } else if(char === "," && !insideQuotes){
+            result.push(current.trim());
+            current = "";
+        } else {
+            current += char;
+        }
+    }
+
+    result.push(current.trim());
+    return result;
+}
+
+function handleCSVUpload(event){
+    const file = event.target.files[0];
+
+    if(!file){
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function(e){
+        const text = e.target.result;
+        const lines = text.split(/\r?\n/).filter(line => line.trim() !== "");
+
+        if(lines.length < 2){
+            alert("CSV appears to be empty");
+            return;
+        }
+
+        const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase().replace(/\s/g, ""));
+
+        const traitIndex = headers.indexOf("trait");
+        const valueIndex = headers.indexOf("value");
+        const leftIndex = headers.indexOf("leftlabel");
+        const rightIndex = headers.indexOf("rightlabel");
+
+        if(traitIndex === -1 || valueIndex === -1 || leftIndex === -1 || rightIndex === -1){
+            alert("CSV needs columns: Trait, Value, LeftLabel, RightLabel");
+            return;
+        }
+
+        saveUndo();
+
+        traits = lines.slice(1).map(line => {
+            const cols = parseCSVLine(line);
+
+            return {
+                name: cols[traitIndex],
+                value: parseFloat(cols[valueIndex]),
+                left: cols[leftIndex],
+                right: cols[rightIndex]
+            };
+        }).filter(t => t.name && !isNaN(t.value));
+
+        renderTable();
+        renderChart();
+    };
+
+    reader.readAsText(file);
 }
 
 document.getElementById("positiveColour").addEventListener("input", renderChart);
@@ -360,6 +608,7 @@ document.getElementById("negativeColour").addEventListener("input", renderChart)
 document.getElementById("gradientStrength").addEventListener("input", renderChart);
 document.getElementById("useGradient").addEventListener("change", renderChart);
 document.getElementById("reverseGradient").addEventListener("change", renderChart);
+document.getElementById("csvUpload").addEventListener("change", handleCSVUpload);
 
 renderTable();
 renderChart();
