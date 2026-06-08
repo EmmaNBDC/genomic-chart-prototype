@@ -211,6 +211,23 @@ function getColour(value){
     return `rgba(${colour.r}, ${colour.g}, ${colour.b}, ${opacity})`;
 }
 
+function getGradient(value){
+    const positiveColour = hexToRgb(document.getElementById("positiveColour").value);
+    const negativeColour = hexToRgb(document.getElementById("negativeColour").value);
+    const strength = parseFloat(document.getElementById("gradientStrength").value);
+
+    const colour = value >= 0 ? positiveColour : negativeColour;
+
+    const pale = `rgba(${colour.r}, ${colour.g}, ${colour.b}, 0.12)`;
+    const strong = `rgba(${colour.r}, ${colour.g}, ${colour.b}, ${0.25 + strength})`;
+
+    if(value >= 0){
+        return `linear-gradient(to right, ${pale}, ${strong})`;
+    } else {
+        return `linear-gradient(to left, ${pale}, ${strong})`;
+    }
+}
+    
 function renderTable(){
     const tbody = document.querySelector("#traitTable tbody");
     tbody.innerHTML = "";
@@ -236,7 +253,7 @@ function renderChart(){
     traits.forEach(trait => {
         const value = Math.max(-3, Math.min(3, parseFloat(trait.value) || 0));
         const width = Math.abs(value) / 3 * 260;
-        const colour = getColour(value);
+        const colour = getGradient(value);;
 
         const row = document.createElement("div");
         row.className = "chart-row";
