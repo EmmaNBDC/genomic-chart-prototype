@@ -463,6 +463,19 @@ let traits = [];
 let undoStack = [];
 let uploadedAnimals = [];
 
+const DEFAULT_DESIGN = {
+    headerColour: "#245986",
+    chartBackground: "#ffffff",
+    barBackground: "#ffffff",
+    positiveColour: "#f0ce3d",
+    negativeColour: "#4f6f8b",
+    useGradient: true,
+    reverseGradient: false,
+    gradientStrength: "0.75"
+};
+
+let lastAppliedDesign = null;
+
 function getDesignSettings(){
     return {
         headerColour: document.getElementById("headerColour").value,
@@ -487,11 +500,11 @@ function applyDesignSettings(settings){
     document.getElementById("gradientStrength").value = settings.gradientStrength;
 }
 
-function saveUndo(){
+function saveUndo(designOverride){
     undoStack.push(JSON.stringify({
-        animal: currentAnimal,
-        traits: traits,
-        design: getDesignSettings()
+        animal: JSON.parse(JSON.stringify(currentAnimal)),
+        traits: JSON.parse(JSON.stringify(traits)),
+        design: JSON.parse(JSON.stringify(designOverride || getDesignSettings()))
     }));
 
     if(undoStack.length > 25){
@@ -660,6 +673,8 @@ function applyTheme(){
     document.documentElement.style.setProperty("--row-bg", document.getElementById("barBackground").value);
     document.documentElement.style.setProperty("--positive", document.getElementById("positiveColour").value);
     document.documentElement.style.setProperty("--negative", document.getElementById("negativeColour").value);
+
+    lastAppliedDesign = getDesignSettings();
     renderChart();
 }
 
@@ -669,14 +684,9 @@ function addTrait(){ saveUndo(); traits.push({name:"New trait", value:0, left:"L
 function toggleEditData(){ const p=document.getElementById("editDataPanel"); p.style.display=p.style.display==="none"?"block":"none"; }
 function saveData(){ renderChart(); document.getElementById("editDataPanel").style.display="none"; }
 function resetDesign(){
-    document.getElementById("headerColour").value="#245986";
-    document.getElementById("chartBackground").value="#ffffff";
-    document.getElementById("barBackground").value="#ffffff";
-    document.getElementById("positiveColour").value="#f0ce3d";
-    document.getElementById("negativeColour").value="#4f6f8b";
-    document.getElementById("useGradient").checked=true;
-    document.getElementById("reverseGradient").checked=false;
-    document.getElementById("gradientStrength").value=0.75;
+    saveUndo();
+
+    applyDesignSettings(DEFAULT_DESIGN);
     applyTheme();
 }
 
@@ -733,39 +743,27 @@ function handleSpreadsheetUpload(e){
     reader.readAsArrayBuffer(file);
 }
 
-let designUndoSaved = false;
+function handleDesignChange(){
+    /*
+      Save the design that was on-screen before this change.
+      This makes Undo work for colour pickers, sliders and checkboxes.
+    */
+    if(lastAppliedDesign){
+        saveUndo(lastAppliedDesign);
+    } else {
+        saveUndo();
+    }
+
+    applyTheme();
+}
 
 ["headerColour","chartBackground","barBackground","positiveColour","negativeColour","gradientStrength"].forEach(id=>{
-    const el = document.getElementById(id);
-
-    el.addEventListener("pointerdown", function(){
-        if(!designUndoSaved){
-            saveUndo();
-            designUndoSaved = true;
-        }
-    });
-
-    el.addEventListener("input", applyTheme);
-
-    el.addEventListener("change", function(){
-        designUndoSaved = false;
-    });
+    document.getElementById(id).addEventListener("input", handleDesignChange);
 });
 
-document.getElementById("useGradient").addEventListener("change", function(){
-    saveUndo();
-    renderChart();
-});
+document.getElementById("useGradient").addEventListener("change", handleDesignChange);
+document.getElementById("reverseGradient").addEventListener("change", handleDesignChange);
 
-document.getElementById("reverseGradient").addEventListener("change", function(){
-    saveUndo();
-    renderChart();
-});
-
-document.getElementById("reverseGradient").addEventListener("change", function(){
-    saveUndo();
-    renderChart();
-});
 document.getElementById("spreadsheetUpload").addEventListener("change",handleSpreadsheetUpload);
 
 traits = buildTraitsFromAnimal(rimrock);
