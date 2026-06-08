@@ -49,6 +49,18 @@ input[type="color"]{
     height:38px;
 }
 
+.checkbox-label{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-weight:bold;
+}
+
+.checkbox-label input{
+    width:auto;
+    padding:0;
+}
+
 button{
     padding:8px 14px;
     cursor:pointer;
@@ -137,7 +149,7 @@ td input{
 </div>
 
 <div class="control-row">
-    <label>
+    <label class="checkbox-label">
         <input type="checkbox" id="useGradient" checked>
         Use gradient
     </label>
@@ -149,7 +161,7 @@ td input{
 </div>
 
 <div class="control-row">
-    <label>
+    <label class="checkbox-label">
         <input type="checkbox" id="reverseGradient">
         Strongest colour at zero
     </label>
@@ -157,19 +169,26 @@ td input{
 
 <button onclick="addTrait()">Add trait</button>
 
+    <button onclick="toggleEditData()" id="editDataBtn">✏️ Edit Data</button>
+
+<div id="editDataPanel" style="display:none;">
     <h3>Trait Data</h3>
 
     <table id="traitTable">
-        <thead>
-            <tr>
-                <th>Trait</th>
-                <th>Value</th>
-                <th>Left label</th>
-                <th>Right label</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+    <thead>
+        <tr>
+            <th>Trait</th>
+            <th>Value</th>
+            <th>Left label</th>
+            <th>Right label</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<button onclick="saveData()">Save Data</button>
+</div>
+
 </div>
 
 <div>
@@ -254,6 +273,16 @@ function getGradient(value){
             ? `linear-gradient(to left, ${strong}, ${weak})`
             : `linear-gradient(to left, ${weak}, ${strong})`;
     }
+}
+
+function toggleEditData(){
+    const panel = document.getElementById("editDataPanel");
+    panel.style.display = panel.style.display === "none" ? "block" : "none";
+}
+
+function saveData(){
+    renderChart();
+    document.getElementById("editDataPanel").style.display = "none";
 }
     
 function renderTable(){
