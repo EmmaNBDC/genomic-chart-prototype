@@ -463,9 +463,59 @@ let traits = [];
 let undoStack = [];
 let uploadedAnimals = [];
 
-function saveUndo(){ undoStack.push(JSON.stringify({animal:currentAnimal, traits:traits})); if(undoStack.length>25) undoStack.shift(); }
-function undoChange(){ if(!undoStack.length){alert("Nothing to undo"); return;} const prev=JSON.parse(undoStack.pop()); currentAnimal=prev.animal; traits=prev.traits; renderAll(); }
+function getDesignSettings(){
+    return {
+        headerColour: document.getElementById("headerColour").value,
+        chartBackground: document.getElementById("chartBackground").value,
+        barBackground: document.getElementById("barBackground").value,
+        positiveColour: document.getElementById("positiveColour").value,
+        negativeColour: document.getElementById("negativeColour").value,
+        useGradient: document.getElementById("useGradient").checked,
+        reverseGradient: document.getElementById("reverseGradient").checked,
+        gradientStrength: document.getElementById("gradientStrength").value
+    };
+}
 
+function applyDesignSettings(settings){
+    document.getElementById("headerColour").value = settings.headerColour;
+    document.getElementById("chartBackground").value = settings.chartBackground;
+    document.getElementById("barBackground").value = settings.barBackground;
+    document.getElementById("positiveColour").value = settings.positiveColour;
+    document.getElementById("negativeColour").value = settings.negativeColour;
+    document.getElementById("useGradient").checked = settings.useGradient;
+    document.getElementById("reverseGradient").checked = settings.reverseGradient;
+    document.getElementById("gradientStrength").value = settings.gradientStrength;
+}
+
+function saveUndo(){
+    undoStack.push(JSON.stringify({
+        animal: currentAnimal,
+        traits: traits,
+        design: getDesignSettings()
+    }));
+
+    if(undoStack.length > 25){
+        undoStack.shift();
+    }
+}
+
+function undoChange(){
+    if(!undoStack.length){
+        alert("Nothing to undo");
+        return;
+    }
+
+    const prev = JSON.parse(undoStack.pop());
+
+    currentAnimal = prev.animal;
+    traits = prev.traits;
+
+    if(prev.design){
+        applyDesignSettings(prev.design);
+    }
+
+    renderAll();
+}
 function getVal(obj, key){ return obj[key] ?? ""; }
 function num(obj, key){ const v = parseFloat(obj[key]); return isNaN(v) ? null : v; }
 function fmt(v){ if(v === null || v === undefined || v === "") return ""; const n = Number(v); if(!isNaN(n)) return Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/0$/,"").replace(/\.00$/,""); return String(v); }
@@ -683,9 +733,21 @@ function handleSpreadsheetUpload(e){
     reader.readAsArrayBuffer(file);
 }
 
-["headerColour","chartBackground","barBackground","positiveColour","negativeColour","gradientStrength"].forEach(id=>document.getElementById(id).addEventListener("input",applyTheme));
-document.getElementById("useGradient").addEventListener("change",renderChart);
-document.getElementById("reverseGradient").addEventListener("change",renderChart);
+["headerColour","chartBackground","barBackground","positiveColour","negativeColour","gradientStrength"].forEach(id=>{
+    document.getElementById(id).addEventListener("input", function(){
+        saveUndo();
+        applyTheme();
+    });
+});
+document.getElementById("useGradient").addEventListener("change", function(){
+    saveUndo();
+    renderChart();
+});
+
+document.getElementById("reverseGradient").addEventListener("change", function(){
+    saveUndo();
+    renderChart();
+});
 document.getElementById("spreadsheetUpload").addEventListener("change",handleSpreadsheetUpload);
 
 traits = buildTraitsFromAnimal(rimrock);
