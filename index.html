@@ -311,7 +311,7 @@ button:hover{ background:#eef3f8; }
                 <button class="button-primary" onclick="loadExample()">Load Rimrock Example</button>
                 <button onclick="returnToUploadedData()">Return to Uploaded Data</button>
                 <button onclick="undoChange()">Undo</button>
-                <button onclick="resetAll()">Reset Design</button>
+                <button onclick="resetDesign()">Reset Design</button>
             </div>
 
             <div class="control-row" style="margin-top:12px;">
@@ -733,13 +733,31 @@ function handleSpreadsheetUpload(e){
     reader.readAsArrayBuffer(file);
 }
 
+let designUndoSaved = false;
+
 ["headerColour","chartBackground","barBackground","positiveColour","negativeColour","gradientStrength"].forEach(id=>{
-    document.getElementById(id).addEventListener("input", function(){
-        saveUndo();
-        applyTheme();
+    const el = document.getElementById(id);
+
+    el.addEventListener("pointerdown", function(){
+        if(!designUndoSaved){
+            saveUndo();
+            designUndoSaved = true;
+        }
+    });
+
+    el.addEventListener("input", applyTheme);
+
+    el.addEventListener("change", function(){
+        designUndoSaved = false;
     });
 });
+
 document.getElementById("useGradient").addEventListener("change", function(){
+    saveUndo();
+    renderChart();
+});
+
+document.getElementById("reverseGradient").addEventListener("change", function(){
     saveUndo();
     renderChart();
 });
