@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Genomic Trait Prototype</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    margin:40px;
+}
+
+.trait{
+    display:grid;
+    grid-template-columns:150px 80px 500px 80px;
+    align-items:center;
+    margin:8px 0;
+}
+
+.bar-container{
+    position:relative;
+    height:20px;
+    background:#eee;
+}
+
+.zero-line{
+    position:absolute;
+    left:50%;
+    top:0;
+    bottom:0;
+    width:2px;
+    background:#666;
+}
+
+.bar{
+    position:absolute;
+    top:2px;
+    height:16px;
+}
+
+</style>
+</head>
+
+<body>
+
+<h2>Genomic Type Prototype</h2>
+
+<div id="traits"></div>
+
+<script>
+
+const traits = [
+{
+name:"Type Merit",
+value:2.88,
+left:"Poor",
+right:"Excellent"
+},
+{
+name:"Mammary",
+value:2.19,
+left:"Poor",
+right:"Excellent"
+},
+{
+name:"Stature",
+value:-0.21,
+left:"Short",
+right:"Tall"
+}
+];
+
+const container = document.getElementById("traits");
+
+traits.forEach(t=>{
+
+const colourIntensity = Math.abs(t.value)/3;
+
+const colour =
+`rgba(0,102,204,${0.2 + colourIntensity*0.8})`;
+
+const width = Math.abs(t.value)/3*250;
+
+const row = document.createElement("div");
+row.className="trait";
+
+row.innerHTML=`
+<div>${t.name}</div>
+<div>${t.left}</div>
+
+<div class="bar-container">
+<div class="zero-line"></div>
+
+<div class="bar"
+style="
+background:${colour};
+width:${width}px;
+${t.value>=0
+?`left:250px`
+:`left:${250-width}px`
+};
+">
+</div>
+
+</div>
+
+<div>${t.right}</div>
+`;
+
+container.appendChild(row);
+
+});
+
+</script>
+
+</body>
+</html>
