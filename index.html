@@ -311,13 +311,17 @@ button:hover{ background:#eef3f8; }
                 <button class="button-primary" onclick="loadExample()">Load Rimrock Example</button>
                 <button onclick="returnToUploadedData()">Return to Uploaded Data</button>
                 <button onclick="undoChange()">Undo</button>
-                <button onclick="resetDesign()">Reset Design</button>
+                <button onclick="resetAll()">Reset Design</button>
             </div>
 
             <div class="control-row" style="margin-top:12px;">
                 <label>Upload spreadsheet</label>
                 <input type="file" id="spreadsheetUpload" accept=".xlsx,.xls,.csv">
-                <div class="small-note">Upload the full results file. The animal dropdown will populate automatically.</div>
+                <div class="small-note">
+    Upload the full results file. The animal dropdown will populate automatically.
+    <br><br>
+    <strong>Privacy:</strong> Uploaded spreadsheets are processed locally in your browser and are not stored, transmitted, or saved to GitHub.
+</div>
                 <div class="small-note" id="uploadStatus"></div>
             </div>
 
