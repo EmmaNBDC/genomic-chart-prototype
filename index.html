@@ -638,12 +638,69 @@ function renderHeader(){
 
 function hexToRgb(hex){ const bigint=parseInt(hex.slice(1),16); return {r:(bigint>>16)&255,g:(bigint>>8)&255,b:bigint&255}; }
 function getGradient(value){
-    const positive=hexToRgb(document.getElementById("positiveColour").value), negative=hexToRgb(document.getElementById("negativeColour").value);
-    const useGradient=document.getElementById("useGradient").checked, reverse=document.getElementById("reverseGradient").checked, strength=parseFloat(document.getElementById("gradientStrength").value);
-    const c=value>=0?positive:negative, weak=`rgba(${c.r},${c.g},${c.b},0.18)`, strong=`rgba(${c.r},${c.g},${c.b},${Math.min(1,0.18+strength)})`;
-    if(!useGradient) return strong;
-    if(value>=0) return reverse ? `linear-gradient(to right, ${strong}, ${weak})` : `linear-gradient(to right, ${weak}, ${strong})`;
-    return reverse ? `linear-gradient(to left, ${strong}, ${weak})` : `linear-gradient(to left, ${weak}, ${strong})`;
+    const positive = hexToRgb(
+        document.getElementById("positiveColour").value
+    );
+
+    const negative = hexToRgb(
+        document.getElementById("negativeColour").value
+    );
+
+    const useGradient =
+        document.getElementById("useGradient").checked;
+
+    const reverse =
+        document.getElementById("reverseGradient").checked;
+
+    const strength = parseFloat(
+        document.getElementById("gradientStrength").value
+    );
+
+    const colour = value >= 0 ? positive : negative;
+
+    /*
+      Position on the shared -3 to +3 scale.
+
+      0   = zero
+      0.5 = ±1.5
+      1   = ±3
+    */
+    const scalePosition = Math.min(1, Math.abs(value) / 3);
+
+    const weakAlpha = 0.18;
+    const strongestAlpha = Math.min(1, weakAlpha + strength);
+
+    /*
+      The bar's end opacity now depends on its actual value.
+      A value of ±3 reaches the strongest opacity.
+      Smaller values remain proportionally lighter.
+    */
+    const valueAlpha =
+        weakAlpha +
+        ((strongestAlpha - weakAlpha) * scalePosition);
+
+    const weak =
+        `rgba(${colour.r},${colour.g},${colour.b},${weakAlpha})`;
+
+    const valueColour =
+        `rgba(${colour.r},${colour.g},${colour.b},${valueAlpha})`;
+
+    const strongest =
+        `rgba(${colour.r},${colour.g},${colour.b},${strongestAlpha})`;
+
+    if(!useGradient){
+        return valueColour;
+    }
+
+    if(value >= 0){
+        return reverse
+            ? `linear-gradient(to right, ${strongest}, ${valueColour})`
+            : `linear-gradient(to right, ${weak}, ${valueColour})`;
+    }
+
+    return reverse
+        ? `linear-gradient(to left, ${strongest}, ${valueColour})`
+        : `linear-gradient(to left, ${weak}, ${valueColour})`;
 }
 
 function renderChart(){
