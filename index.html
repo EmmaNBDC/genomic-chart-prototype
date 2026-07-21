@@ -225,7 +225,7 @@ button:hover{ background:#eef3f8; }
 
 .scale{
     display:grid;
-    grid-template-columns:90px 86px 78px 1fr 78px 58px;
+    grid-template-columns:90px 86px 1fr 78px 58px;
     background:var(--holstein-blue);
     color:white;
     font-weight:bold;
@@ -245,7 +245,7 @@ button:hover{ background:#eef3f8; }
 
 .chart-row{
     display:grid;
-    grid-template-columns:90px 86px 78px 1fr 78px 58px;
+    grid-template-columns:90px 86px 1fr 78px 58px;
     align-items:center;
     font-size:12px;
     border-bottom:1px solid var(--line-grey);
@@ -415,9 +415,19 @@ button:hover{ background:#eef3f8; }
         <div class="summary-row" id="typeSummary"></div>
 
         <div class="scale">
-            <div>Trait</div><div></div><div>-3</div>
-            <div class="scale-bar"><span>-2</span><span>-1</span><span>0</span><span>+1</span><span>+2</span><span>+3</span></div>
-            <div></div><div>Value</div>
+            <div>Trait</div>
+            <div></div>
+            <div class="scale-bar">
+                <span>-3</span>
+                <span>-2</span>
+                <span>-1</span>
+                <span>0</span>
+                <span>+1</span>
+                <span>+2</span>
+                <span>+3</span>
+            </div>
+            <div></div>
+            <div>Value</div>
         </div>
         <div id="chart"></div>
     </div>
@@ -659,7 +669,7 @@ function getGradient(value){
     const colour = value >= 0 ? positive : negative;
 
     /*
-      Position on the shared -3 to +3 scale.
+      Use the fixed -3 to +3 scale to determine colour strength.
 
       0   = zero
       0.5 = ±1.5
@@ -671,9 +681,8 @@ function getGradient(value){
     const strongestAlpha = Math.min(1, weakAlpha + strength);
 
     /*
-      The bar's end opacity now depends on its actual value.
-      A value of ±3 reaches the strongest opacity.
-      Smaller values remain proportionally lighter.
+      The end colour now reflects the trait's actual position on the
+      shared scale. Only ±3 reaches the strongest available colour.
     */
     const valueAlpha =
         weakAlpha +
@@ -710,7 +719,23 @@ function renderChart(){
     traits.forEach(trait=>{
         const value=Math.max(-3,Math.min(3,parseFloat(trait.value)||0)); const width=Math.abs(value)/3*50; const colour=getGradient(value);
         const row=document.createElement("div"); row.className="chart-row";
-        row.innerHTML=`<div>${trait.name}</div><div>${trait.left}</div><div></div><div class="bar-container"><div class="zero-line"></div><div class="bar" style="background:${colour};width:${width}%;${value>=0?`left:50%;`:`left:${50-width}%;`}"></div></div><div>${trait.right}</div><div class="value">${fmt(value)}</div>`;
+        row.innerHTML=`
+            <div>${trait.name}</div>
+            <div>${trait.left}</div>
+            <div class="bar-container">
+                <div class="zero-line"></div>
+                <div
+                    class="bar"
+                    style="
+                        background:${colour};
+                        width:${width}%;
+                        ${value >= 0 ? "left:50%;" : `left:${50 - width}%;`}
+                    "
+                ></div>
+            </div>
+            <div>${trait.right}</div>
+            <div class="value">${fmt(value)}</div>
+        `;
         chart.appendChild(row);
     });
 }
