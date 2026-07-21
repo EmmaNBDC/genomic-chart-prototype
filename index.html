@@ -239,8 +239,48 @@ button:hover{ background:#eef3f8; }
 }
 
 .scale-bar{
-    display:flex;
-    justify-content:space-between;
+    position:relative;
+    height:100%;
+    padding:0 !important;
+}
+
+.scale-bar span{
+    position:absolute;
+    top:4px;
+    white-space:nowrap;
+}
+
+.scale-bar span:nth-child(1){
+    left:0;
+}
+
+.scale-bar span:nth-child(2){
+    left:16.6667%;
+    transform:translateX(-50%);
+}
+
+.scale-bar span:nth-child(3){
+    left:33.3333%;
+    transform:translateX(-50%);
+}
+
+.scale-bar span:nth-child(4){
+    left:50%;
+    transform:translateX(-50%);
+}
+
+.scale-bar span:nth-child(5){
+    left:66.6667%;
+    transform:translateX(-50%);
+}
+
+.scale-bar span:nth-child(6){
+    left:83.3333%;
+    transform:translateX(-50%);
+}
+
+.scale-bar span:nth-child(7){
+    right:0;
 }
 
 .chart-row{
@@ -292,11 +332,6 @@ button:hover{ background:#eef3f8; }
     border:0;
     padding:4px;
     font-size:12px;
-}
-    
-.scale-bar span:nth-child(4){
-    left:50%;
-    transform:translateX(calc(-50% + 2px));
 }
 
 @media(max-width:1000px){
@@ -675,21 +710,14 @@ function getGradient(value){
     const colour = value >= 0 ? positive : negative;
 
     /*
-      Use the fixed -3 to +3 scale to determine colour strength.
-
-      0   = zero
-      0.5 = ±1.5
-      1   = ±3
+      Set colour intensity using the common -3 to +3 scale.
+      Only a value at ±3 reaches the strongest colour.
     */
     const scalePosition = Math.min(1, Math.abs(value) / 3);
 
     const weakAlpha = 0.18;
     const strongestAlpha = Math.min(1, weakAlpha + strength);
 
-    /*
-      The end colour now reflects the trait's actual position on the
-      shared scale. Only ±3 reaches the strongest available colour.
-    */
     const valueAlpha =
         weakAlpha +
         ((strongestAlpha - weakAlpha) * scalePosition);
